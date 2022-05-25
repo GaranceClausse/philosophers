@@ -12,8 +12,19 @@
 
 #ifndef PHILO_H
 # define PHILO_H
-	
-#include <SDL2/SDL.H>
+
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+
+typedef enum e_state {
+	CREATE,
+	EATING,
+	SLEEPING,
+	THINKING,
+	DEAD
+}	t_state;
 
 typedef struct s_param
 {
@@ -30,7 +41,7 @@ typedef struct s_philo
 	int		l_fork;
 	int		r_fork;
 	int		meals;
-	enum	state;
+	t_state	state;
 	t_param	param;
 }			t_philo;
 
@@ -40,5 +51,8 @@ void	ft_putchar_fd(char c, int fd);
 void	ft_putstr_fd(char *s, int fd);
 int		ft_atoi(const char *str);
 void	init_param(t_param *param, char **argv);
+int		check_param(t_param param);
+int		check_input(char **argv);
+void	create_table(t_param param);
 
 #endif

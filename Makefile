@@ -1,8 +1,8 @@
 NAME = philosophers
-OBJS = $(addprefix srcs/, libft.o main.o\
+OBJS = $(addprefix ./srcs/, libft.o parser.o philo.o main.o\
 )
 
-CFLAGS = -Iincludes -Wall -Wextra -Werror
+CFLAGS = -Iincludes -std=c99 -Wall -Wextra -Werror
 DBFLAGS = -g3
 
 all: $(NAME)
