@@ -27,7 +27,7 @@ int	main(int argc, char **argv)
 	init_param(&param, argv);
 	if (check_param(param) == 1)
 		return (1);
-	create_table(param);
+	create_table(&param);
 	
 	return (0);
 }

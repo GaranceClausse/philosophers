@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 typedef enum e_state {
 	CREATE,
@@ -26,14 +27,6 @@ typedef enum e_state {
 	DEAD
 }	t_state;
 
-typedef struct s_param
-{
-	int	nb_philo;	
-	int	t_die;
-	int	t_eat;
-	int	t_sleep;	
-	int	nb_meal;
-}			t_param;
 
 typedef struct s_philo
 {
@@ -41,9 +34,20 @@ typedef struct s_philo
 	int		l_fork;
 	int		r_fork;
 	int		meals;
-	t_state	state;
-	t_param	param;
+	t_state	state;	
+	pthread_t	thread;
 }			t_philo;
+
+typedef struct s_param
+{
+	int		nb_philo;	
+	int		t_die;
+	int		t_eat;
+	int		t_sleep;	
+	int		nb_meal;
+	t_philo	**philo;
+}			t_param;
+
 
 int		ft_isdigit(int c);
 size_t	ft_strlen(const char *s);
@@ -53,6 +57,6 @@ int		ft_atoi(const char *str);
 void	init_param(t_param *param, char **argv);
 int		check_param(t_param param);
 int		check_input(char **argv);
-void	create_table(t_param param);
+void	create_table(t_param *param);
 
 #endif

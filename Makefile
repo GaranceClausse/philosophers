@@ -11,7 +11,7 @@ debug: CFLAGS+=$(DBFLAGS)
 debug:	$(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $^ -o $@ 
+	$(CC) $^ -o $@ -lpthread
 
 clean: 
 	$(RM) $(OBJS)
