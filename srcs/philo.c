@@ -12,57 +12,93 @@
 
 #include "philo.h"
 
-t_philo	*init_philo(t_param *param, int i)
+int	init_philo(t_param *param)
 {
-	param->philo[i] = malloc(sizeof(t_philo));
-	if (!param->philo[i])
-		return (NULL);
-	param->philo[i]->id = i + 1;
-	param->philo[i]->l_fork = 1;
-	param->philo[i]->r_fork = 1;
-	param->philo[i]->meals = 0;
-	param->philo[i]->state = CREATE;
-	return (param->philo[i]);
+	int	i;
+
+	i = 0;
+	while (i < param->nb_philo)
+	{
+		param->philo[i] = malloc(sizeof(t_philo));
+		if (!param->philo[i])
+			return (1);
+		param->philo[i]->id = i + 1;
+		param->philo[i]->l_fork = 1;
+		param->philo[i]->r_fork = 1;
+		param->philo[i]->meals = 0;
+		param->philo[i]->state = CREATE;
+		printf("philo id == %d\n", param->philo[i]->id);
+		i++;
+	}
+	return (0);
 }
 
-void	*start_to_eat(void *arg)
+void	*ending_condition(void *arg)
 {
-	t_param *param;
+	t_philo *philo;
 
-	param = arg;
-	param->philo[i]->state = EATING;
-	param->philo[i]->l_fork = 0;
-	param->philo[i]->r_fork = 0;
-	if (param->philo[i + 1])
-		param->philo[i + 1]->l_fork = 0;
-	else
-		param->philo[0]->l_fork = 0;
-	if (param->philo[i - 1])
-		param->philo[i - 1]->r_fork = 0;
-	else
-		param->philo[param->nb_philo - 1]->r_fork = 0;
-	pthread_exit(NULL);
+	philo = arg;
+	while (1)
+	{
+		printf("%d is dead\n", philo->id);
+	}
+	return (NULL);
 }
 
-void	create_table(t_param *param)
+int	start_to_eat(t_param *param)
 {
-	int ret;
+	pthread_t	end;
+	int	i;
+
+	i = 0;
+	while (i < param->nb_philo)
+	{
+		pthread_create(&end, NULL, ending_condition, (void *)param->philo[i]);
+		pthread_detach(end);
+		/*param->philo[i]->state = EATING;
+		param->philo[i]->l_fork = 0;
+		param->philo[i]->r_fork = 0;
+		if (param->philo[i + 1])
+			param->philo[i + 1]->l_fork = 0;
+		else
+			param->philo[0]->l_fork = 0;
+		if (param->philo[i - 1])
+			param->philo[i - 1]->r_fork = 0;
+		else
+			param->philo[param->nb_philo - 1]->r_fork = 0;*/
+		i++;
+	}
+	return (0);
+}
+/*
+void	join_philo(t_param *param)
+{
 	int	i;
 
 	i = param->nb_philo - 1;
+	while (i >= 0)
+	{
+		pthread_join(param->philo[i]->thread, NULL);
+		i--;
+	}
+}*/
+
+void	create_table(t_param *param)
+{
+	//int ret;
+	
 	param->philo = malloc(sizeof(t_philo *) * param->nb_philo);
 	if (!param->philo)
 		return ;
-	while (i >= 0)
-	{
-		param->philo[i] = init_philo(param, i);
-		printf("param philo id = %d\n", param->philo[i]->id);
-		ret = pthread_create(&param->philo[i]->thread, NULL, start_to_eat, &param);
-		if (ret) {
-         ft_putstr_fd("Error:unable to create thread\n", 2);
-         return ;
-      }
+	if (init_philo(param))
+		return ;
+	start_to_eat(param);
+	
+	//	if (ret) {
+      //   ft_putstr_fd("Error:unable to create thread\n", 2);
+        // return ;
+      //	}
 	//	pthread_create (pthread_t * thread, pthread_attr_t * attr, void * (* start_routine) (void *), void * arg);
-		i--;
-	}
+	
+	//join_philo(param);
 }

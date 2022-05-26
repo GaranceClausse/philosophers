@@ -35,7 +35,6 @@ typedef struct s_philo
 	int		r_fork;
 	int		meals;
 	t_state	state;	
-	pthread_t	thread;
 }			t_philo;
 
 typedef struct s_param
@@ -45,7 +44,9 @@ typedef struct s_param
 	int		t_eat;
 	int		t_sleep;	
 	int		nb_meal;
-	t_philo	**philo;
+	int		cpt;
+	t_philo	**philo;	
+	pthread_t	*thread;
 }			t_param;
 
 

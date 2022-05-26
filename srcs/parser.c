@@ -19,6 +19,7 @@ void	init_param(t_param *param, char **argv)
 	param->t_eat = ft_atoi(argv[3]);
 	param->t_sleep = ft_atoi(argv[4]);
 	param->nb_meal = -1;
+	param->cpt = 0;
 	if (argv[5])
 		param->nb_meal = ft_atoi(argv[5]);
 }
