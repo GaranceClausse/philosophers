@@ -13,11 +13,14 @@
 #ifndef PHILO_H
 # define PHILO_H
 
+#define  _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 typedef enum e_state {
 	CREATE,
@@ -34,7 +37,11 @@ typedef struct s_philo
 	int		l_fork;
 	int		r_fork;
 	int		meals;
-	t_state	state;	
+	t_state	state;
+	long long	*ate_at;
+	pthread_mutex_t mutex_left;
+	pthread_mutex_t mutex_right;
+	struct s_param	*param;
 }			t_philo;
 
 typedef struct s_param
@@ -45,7 +52,8 @@ typedef struct s_param
 	int		t_sleep;	
 	int		nb_meal;
 	int		cpt;
-	t_philo	**philo;	
+	t_philo	**philo;		
+	struct timeval	start_at;
 	pthread_t	*thread;
 }			t_param;
 
