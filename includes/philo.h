@@ -51,6 +51,7 @@ typedef struct s_param
 	int		nb_meal;
 	int		is_done;
 	t_philo	**philo;
+	int		*forks;
 	pthread_mutex_t *mutex_forks;
 	struct timeval	start_at;
 }			t_param;

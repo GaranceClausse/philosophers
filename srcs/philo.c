@@ -16,8 +16,8 @@ void	is_done(t_philo *philo)
 {
 	if (philo->meals == philo->param->nb_meal)
 		philo->param->is_done = 1;
-	if (philo->state != EATING /*&& philo->param->ate_at >= philo->param->t_die*/)
-		philo->param->is_done = 1;
+	//if (philo->state != EATING /*&& philo->param->ate_at >= philo->param->t_die*/)
+	//	philo->param->is_done = 1;
 }
 
 long long	actual_time(void)
@@ -57,9 +57,9 @@ int	init_philo(t_param *param)
 void	take_forks(t_philo *philo)
 {
 	pthread_mutex_lock(&philo->param->mutex_forks[philo->l_fork]);
-	printf("%d has taken forks\n", philo->id);
+	printf("%d has taken a fork\n", philo->id);
 	pthread_mutex_lock(&philo->param->mutex_forks[philo->r_fork]);
-	printf("%d has taken forks\n", philo->id);
+	printf("%d has taken a fork\n", philo->id);
 	
 	
 }
@@ -68,6 +68,7 @@ void	eat(t_philo *philo)
 {
 	usleep(philo->param->t_eat * 1000);
 	philo->meals++;
+	philo->state = EATING;
 	printf("%d is eating\n", philo->id);
 	is_done(philo);
 	pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
@@ -83,11 +84,11 @@ void	*routine(void *arg)
 	while (1)
 	{
 		take_forks(philo);
-		eat(philo);
-		
+		eat(philo);		
 		if (philo->param->is_done == 1)
 			break ;
-		printf("philo->param->is_done = %d,philo->meals = %d ", philo->param->is_done, philo->meals);
+		printf("philo->param->is_done = %d,philo->meals = %d \n", philo->param->is_done, philo->meals);
+		
 	}
 	return (NULL);
 }
@@ -102,7 +103,8 @@ int	start_to_eat(t_param *param)
 	while (i < param->nb_philo)
 	{
 		pthread_create(&thread, NULL, &routine, (void *)param->philo[i]);
-		pthread_join(thread, NULL);
+		if (param->philo[i]->id % 2)
+			pthread_join(thread, NULL);
 		pthread_detach(thread);
 		
 	//	pthread_mutex_destroy(&param->philo[i]->mutex_left);

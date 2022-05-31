@@ -26,11 +26,13 @@ void	init_param(t_param *param, char **argv)
 	if (argv[5])
 		param->nb_meal = ft_atoi(argv[5]);
 	param->mutex_forks = malloc(sizeof(pthread_mutex_t) * param->nb_philo);
+	param->forks = malloc(sizeof(int) * param->nb_philo);
 //	if (!param->mutex_forks)
 //		return (ERROR);
 	while (i < param->nb_philo)
 	{
 		pthread_mutex_init(&param->mutex_forks[i], NULL);
+		param->forks[i] = 1;
 		i++;
 	}
 }
