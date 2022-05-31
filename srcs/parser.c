@@ -14,14 +14,25 @@
 
 void	init_param(t_param *param, char **argv)
 {
+	int	i;
+	
+	i = 0;
 	param->nb_philo = ft_atoi(argv[1]);
 	param->t_die = ft_atoi(argv[2]);
 	param->t_eat = ft_atoi(argv[3]);
 	param->t_sleep = ft_atoi(argv[4]);
 	param->nb_meal = -1;
-	param->cpt = 0;
+	param->is_done = 0;
 	if (argv[5])
 		param->nb_meal = ft_atoi(argv[5]);
+	param->mutex_forks = malloc(sizeof(pthread_mutex_t) * param->nb_philo);
+//	if (!param->mutex_forks)
+//		return (ERROR);
+	while (i < param->nb_philo)
+	{
+		pthread_mutex_init(&param->mutex_forks[i], NULL);
+		i++;
+	}
 }
 
 int	check_param(t_param param)

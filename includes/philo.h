@@ -39,8 +39,6 @@ typedef struct s_philo
 	int		meals;
 	t_state	state;
 	long long	*ate_at;
-	pthread_mutex_t mutex_left;
-	pthread_mutex_t mutex_right;
 	struct s_param	*param;
 }			t_philo;
 
@@ -51,10 +49,10 @@ typedef struct s_param
 	int		t_eat;
 	int		t_sleep;	
 	int		nb_meal;
-	int		cpt;
-	t_philo	**philo;		
+	int		is_done;
+	t_philo	**philo;
+	pthread_mutex_t *mutex_forks;
 	struct timeval	start_at;
-	pthread_t	*thread;
 }			t_param;
 
 

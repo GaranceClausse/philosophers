@@ -12,6 +12,14 @@
 
 #include "philo.h"
 
+void	is_done(t_philo *philo)
+{
+	if (philo->meals == philo->param->nb_meal)
+		philo->param->is_done = 1;
+	if (philo->state != EATING /*&& philo->param->ate_at >= philo->param->t_die*/)
+		philo->param->is_done = 1;
+}
+
 long long	actual_time(void)
 {
 	struct timeval	time;
@@ -32,11 +40,11 @@ int	init_philo(t_param *param)
 		if (!param->philo[i])
 			return (1);
 		param->philo[i]->id = i + 1;
-		param->philo[i]->r_fork = i + 1;
+		param->philo[i]->r_fork = i;
 		if (i == 0)
-			param->philo[i]->l_fork = param->nb_philo;
+			param->philo[i]->l_fork = param->nb_philo - 1;
 		else
-			param->philo[i]->l_fork = i;
+			param->philo[i]->l_fork = i - 1;
 		param->philo[i]->meals = 0;
 		param->philo[i]->state = CREATE;
 		param->philo[i]->param = param;
@@ -46,67 +54,63 @@ int	init_philo(t_param *param)
 	return (0);
 }
 
+void	take_forks(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->param->mutex_forks[philo->l_fork]);
+	printf("%d has taken forks\n", philo->id);
+	pthread_mutex_lock(&philo->param->mutex_forks[philo->r_fork]);
+	printf("%d has taken forks\n", philo->id);
+	
+	
+}
+
+void	eat(t_philo *philo)
+{
+	usleep(philo->param->t_eat * 1000);
+	philo->meals++;
+	printf("%d is eating\n", philo->id);
+	is_done(philo);
+	pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
+	pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);	
+}
+
 void	*routine(void *arg)
 {
 	t_philo *philo;
 
 	philo = arg;
-	
 	// Here need to gettimeof day + add all the conditions with taking a fork etc..
 	while (1)
 	{
-		pthread_mutex_lock(&philo->mutex_left);
-		pthread_mutex_lock(&philo->mutex_right);
-		printf("%d has taken forks\n", philo->id);
-		usleep(philo->param->t_eat * 1000);
-		pthread_mutex_unlock(&philo->mutex_left);
-		pthread_mutex_unlock(&philo->mutex_right);
+		take_forks(philo);
+		eat(philo);
+		
+		if (philo->param->is_done == 1)
+			break ;
+		printf("philo->param->is_done = %d,philo->meals = %d ", philo->param->is_done, philo->meals);
 	}
 	return (NULL);
 }
 
 int	start_to_eat(t_param *param)
 {
-	pthread_t	end;
 	int	i;
+	pthread_t	thread;
 
 	i = 0;
 	gettimeofday(&param->start_at, NULL);
 	while (i < param->nb_philo)
 	{
-		pthread_mutex_init(&param->philo[i]->mutex_left, NULL);
-		pthread_mutex_init(&param->philo[i]->mutex_right, NULL);
-		pthread_create(&end, NULL, routine, (void *)param->philo[i]);
-		pthread_detach(end);
-		/*param->philo[i]->state = EATING;
-		param->philo[i]->l_fork = 0;
-		param->philo[i]->r_fork = 0;
-		if (param->philo[i + 1])
-			param->philo[i + 1]->l_fork = 0;
-		else
-			param->philo[0]->l_fork = 0;
-		if (param->philo[i - 1])
-			param->philo[i - 1]->r_fork = 0;
-		else
-			param->philo[param->nb_philo - 1]->r_fork = 0;*/
+		pthread_create(&thread, NULL, &routine, (void *)param->philo[i]);
+		pthread_join(thread, NULL);
+		pthread_detach(thread);
+		
 	//	pthread_mutex_destroy(&param->philo[i]->mutex_left);
 	//	pthread_mutex_destroy(&param->philo[i]->mutex_right);
 		i++;
 	}
 	return (0);
 }
-/*
-void	join_philo(t_param *param)
-{
-	int	i;
-
-	i = param->nb_philo - 1;
-	while (i >= 0)
-	{
-		pthread_join(param->philo[i]->thread, NULL);
-		i--;
-	}
-}*/
 
 void	create_table(t_param *param)
 {
@@ -118,12 +122,4 @@ void	create_table(t_param *param)
 	if (init_philo(param))
 		return ;
 	start_to_eat(param);
-	
-	//	if (ret) {
-      //   ft_putstr_fd("Error:unable to create thread\n", 2);
-        // return ;
-      //	}
-	//	pthread_create (pthread_t * thread, pthread_attr_t * attr, void * (* start_routine) (void *), void * arg);
-	
-	//join_philo(param);
 }
