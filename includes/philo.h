@@ -24,22 +24,27 @@
 
 typedef enum e_state {
 	CREATE,
+	READY,
 	EATING,
 	SLEEPING,
 	THINKING,
-	DEAD
+	DEAD,
+	DONE,
 }	t_state;
 
 
 typedef struct s_philo
 {
 	int		id;
+	int		cpt;
 	int		l_fork;
 	int		r_fork;
 	int		meals;
 	t_state	state;
 	long long	*ate_at;
-	struct s_param	*param;
+	long long	*starve;
+	struct s_param	*param;	
+	pthread_mutex_t	mutex;
 }			t_philo;
 
 typedef struct s_param
@@ -49,7 +54,6 @@ typedef struct s_param
 	int		t_eat;
 	int		t_sleep;	
 	int		nb_meal;
-	int		is_done;
 	t_philo	**philo;
 	int		*forks;
 	pthread_mutex_t *mutex_forks;
@@ -66,5 +70,6 @@ void	init_param(t_param *param, char **argv);
 int		check_param(t_param param);
 int		check_input(char **argv);
 void	create_table(t_param *param);
+void	exit_philo(t_param *param);
 
 #endif

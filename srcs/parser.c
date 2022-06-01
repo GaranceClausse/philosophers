@@ -22,7 +22,6 @@ void	init_param(t_param *param, char **argv)
 	param->t_eat = ft_atoi(argv[3]);
 	param->t_sleep = ft_atoi(argv[4]);
 	param->nb_meal = -1;
-	param->is_done = 0;
 	if (argv[5])
 		param->nb_meal = ft_atoi(argv[5]);
 	param->mutex_forks = malloc(sizeof(pthread_mutex_t) * param->nb_philo);
@@ -32,7 +31,7 @@ void	init_param(t_param *param, char **argv)
 	while (i < param->nb_philo)
 	{
 		pthread_mutex_init(&param->mutex_forks[i], NULL);
-		param->forks[i] = 1;
+		param->forks[i] = 0;
 		i++;
 	}
 }
