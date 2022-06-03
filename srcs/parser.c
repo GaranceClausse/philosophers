@@ -31,7 +31,7 @@ void	init_param(t_param *param, char **argv)
 	while (i < param->nb_philo)
 	{
 		pthread_mutex_init(&param->mutex_forks[i], NULL);
-		param->forks[i] = 0;
+		param->forks[i] = 1;
 		i++;
 	}
 }
