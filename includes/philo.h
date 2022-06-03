@@ -28,6 +28,7 @@ typedef enum e_state {
 	EATING,
 	SLEEPING,
 	THINKING,
+	STARVE,
 	DEAD,
 	DONE,
 }	t_state;
@@ -42,8 +43,7 @@ typedef struct s_philo
 	int		meals;
 	t_state	state;
 	pthread_t	thread;
-	long long	*ate_at;
-	long long	*starve;
+	long long	ate_at;
 	struct s_param	*param;	
 	pthread_mutex_t	mutex;
 }			t_philo;
@@ -55,6 +55,7 @@ typedef struct s_param
 	int		t_eat;
 	int		t_sleep;	
 	int		nb_meal;
+	int		smo_dead;
 	t_philo	**philo;
 	int		*forks;
 	pthread_mutex_t *mutex_forks;

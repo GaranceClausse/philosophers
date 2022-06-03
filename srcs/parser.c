@@ -24,6 +24,7 @@ void	init_param(t_param *param, char **argv)
 	param->nb_meal = -1;
 	if (argv[5])
 		param->nb_meal = ft_atoi(argv[5]);
+	param->smo_dead = 0;
 	param->mutex_forks = malloc(sizeof(pthread_mutex_t) * param->nb_philo);
 	param->forks = malloc(sizeof(int) * param->nb_philo);
 //	if (!param->mutex_forks)
