@@ -86,15 +86,12 @@ void	take_forks(t_philo *philo)
 		}
 	}
 }
-	//pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
-	//pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);	
-
 
 int	eat(t_philo *philo)
 {
 	if (philo->state != READY)
 		return (-1);
-	printf("%d is eating, state = %d\n", philo->id, philo->state);	
+	printf("%d is eating\n", philo->id);	
 	philo->state = EATING;
 	usleep(philo->param->t_eat * 1000);
 	philo->meals++;
@@ -117,14 +114,17 @@ void	give_back_fork(t_philo *philo)
 	}
 }
 
+
+
 void	*routine(void *arg)
 {
 	t_philo *philo;
 
 	philo = arg;
-	
+	if (philo->id % 2 == 0)
+		usleep(philo->param->t_eat * 1000);
 	// Here need to gettimeof day + add all the conditions with taking a fork etc..
-	while (1)
+	while (is_done(philo) == 0)
 	{
 		pthread_mutex_lock(&philo->mutex);
 		take_forks(philo);
@@ -133,7 +133,6 @@ void	*routine(void *arg)
 		
 		eat(philo);
 		give_back_fork(philo);
-		//usleep(5000);
 		pthread_mutex_unlock(&philo->mutex);
 	}
 	return (NULL);
@@ -142,20 +141,13 @@ void	*routine(void *arg)
 int	start_to_eat(t_param *param)
 {
 	int	i;
-	pthread_t	thread;
+//	pthread_t	thread;
 
 	i = 0;
 	gettimeofday(&param->start_at, NULL);
 	while (i < param->nb_philo)
 	{
-		
-		pthread_create(&thread, NULL, &routine, (void *)param->philo[i]);		
-		pthread_detach(thread);
-		if ((param->philo[i]->id % 2))
-		{
-			usleep(param->t_eat * 1000);
-		}
-	//	pthread_join(thread, NULL);
+		pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]);		
 		i++;
 	}
 	return (0);

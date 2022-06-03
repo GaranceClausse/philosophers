@@ -19,6 +19,7 @@ void	exit_philo(t_param *param)
 	i = 0;
 	while (i < param->nb_philo)
 	{
+		pthread_join(param->philo[i]->thread, NULL);
 		pthread_mutex_destroy(&param->mutex_forks[i]);
 		pthread_mutex_destroy(&param->philo[i]->mutex);
 		free(param->philo[i]);

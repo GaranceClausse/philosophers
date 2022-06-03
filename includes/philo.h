@@ -41,6 +41,7 @@ typedef struct s_philo
 	int		r_fork;
 	int		meals;
 	t_state	state;
+	pthread_t	thread;
 	long long	*ate_at;
 	long long	*starve;
 	struct s_param	*param;	
