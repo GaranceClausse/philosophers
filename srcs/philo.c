@@ -13,27 +13,44 @@
 #include "philo.h"
 
 
+
 long long	actual_time(struct timeval	time)
 {
 	
 	return (time.tv_sec * 1000 + time.tv_usec / 1000);
 }
 
-int	is_done(t_philo *philo)
+void	write_message(t_philo *philo, char *str)
 {
-	int	i;
 	struct timeval	time;
 	long long		timestp;
+	long long		lastmeal;
 
-
-	i = 0;
-	gettimeofday(&time, NULL);
-	timestp = (actual_time(time) - actual_time(philo->param->start_at));
-	if ((timestp - philo->ate_at) >= philo->param->t_die)
+	gettimeofday(&time, NULL);	
+	timestp = actual_time(time);
+	lastmeal = (actual_time(time) - actual_time(philo->param->start_at) - philo->ate_at);
+	if (lastmeal > philo->param->t_die && philo->param->smo_dead == 0)
 	{
 		philo->state = STARVE;
 		philo->param->smo_dead = 1;
+		printf("%lld %d %s\n", lastmeal, philo->id, "is dead");
 	}
+	else if (philo->param->smo_dead == 0)
+	{
+		printf("%lld %d %s\n", timestp, philo->id, str);
+		printf("%lld %d\n", lastmeal , philo->id);
+	}
+	
+//	else
+//		printf("%lld %d %s\n", timestp, philo->id, "is dead");
+	
+}
+
+int	is_done(t_philo *philo)
+{
+	int	i;
+	
+	i = 0;	
 	while (i < philo->param->nb_philo)
 	{
 		if (philo->param->philo[i]->state != DONE)
@@ -54,17 +71,7 @@ int	is_done(t_philo *philo)
 
 
 
-void	write_message(t_philo *philo, char *str)
-{
-	struct timeval	time;
-	long long		timestp;
 
-	gettimeofday(&time, NULL);
-//	timestp = (actual_time(time) - actual_time(philo->param->start_at));
-	timestp = actual_time(time);
-	printf("%lld %d %s\n", timestp, philo->id, str);
-	
-}
 
 int	init_philo(t_param *param)
 {
@@ -95,7 +102,7 @@ int	init_philo(t_param *param)
 void	take_forks(t_philo *philo)
 {
 	
-	if (philo->state == DONE || philo->state == STARVE)
+	if (philo->state == DONE || philo->param->smo_dead == 1)
 	{
 		return ;
 	}
@@ -113,7 +120,7 @@ void	take_forks(t_philo *philo)
 	{
 		if (!(pthread_mutex_lock(&philo->param->mutex_forks[philo->l_fork])))
 		{
-			pthread_mutex_lock(&philo->param->mutex_forks[philo->r_fork]);	
+			pthread_mutex_lock(&philo->param->mutex_forks[philo->r_fork]);
 			write_message(philo, "has taken a fork");
 			write_message(philo, "has taken a fork");
 			philo->state = READY;
@@ -124,21 +131,19 @@ void	take_forks(t_philo *philo)
 int	eat(t_philo *philo)
 {	
 	struct timeval	time;
-	if (philo->state == DONE || philo->state == STARVE)
-		return (-1);
 
-	gettimeofday(&time, NULL);
-	philo->ate_at = (actual_time(time) - actual_time(philo->param->start_at));
-//	printf("philo %d tmestp in eat == %lld \n", philo->id, philo->ate_at);		
+	if (philo->state == DONE || philo->param->smo_dead == 1)
+		return (-1);
 	write_message(philo, "is eating");	
 	philo->state = EATING;
+	gettimeofday(&time, NULL);
+	philo->ate_at = (actual_time(time) - actual_time(philo->param->start_at));
 	usleep(philo->param->t_eat * 1000);
 	if (philo->param->nb_meal != -1 && philo->meals >= philo->param->nb_meal)
 		philo->state = DONE;
 	philo->meals++;
-//	if (is_done(philo))
-//		return (1);
-	
+	if (philo->param->smo_dead == 1)
+		return (-1);
 	return (0);
 }
 
@@ -146,14 +151,15 @@ void	give_back_fork(t_philo *philo)
 {
 	if (philo->state == EATING)
 	{
+		
 		write_message(philo, "is sleeping");		
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);	
 		usleep(philo->param->t_sleep * 1000);
-		write_message(philo, "is thinking");	
-		philo->state = THINKING;
+		if (philo->param->smo_dead == 0)
+			write_message(philo, "is thinking");
 	}
-	else if (philo->state == DONE || philo->state == STARVE)
+	else /* if (philo->state == DONE || philo->state == STARVE)*/
 	{
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
@@ -167,25 +173,26 @@ void	give_back_fork(t_philo *philo)
 void	*routine(void *arg)
 {
 	t_philo *philo;
-	struct timeval	time;
 
-	gettimeofday(&time, NULL);
-	philo = arg;
-	philo->ate_at = (actual_time(philo->param->start_at));
+	philo = arg;	
+	gettimeofday(&philo->param->start_at, NULL);
+	philo->ate_at = (actual_time(philo->param->start_at));	
 	if (philo->id % 2 == 0)
 		usleep(philo->param->t_eat * 1000);
 	// Here need to gettimeof day + add all the conditions with taking a fork etc..
 	while (philo->param->smo_dead == 0 && is_done(philo) == 0)
 	{
 		pthread_mutex_lock(&philo->mutex);
+		if (philo->param->smo_dead == 1)
+			break ;
 		take_forks(philo);
-		/*if (eat(philo) == -1)
+		if (eat(philo) == -1)
 		{				
 			pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
 			pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
 			break ;
-		}*/
-		eat(philo);
+		}
+	//	eat(philo);
 		give_back_fork(philo);
 		pthread_mutex_unlock(&philo->mutex);
 	}
@@ -197,7 +204,6 @@ int	start_to_eat(t_param *param)
 	int	i;
 
 	i = 0;
-	gettimeofday(&param->start_at, NULL);
 	while (i < param->nb_philo)
 	{
 		pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]);		

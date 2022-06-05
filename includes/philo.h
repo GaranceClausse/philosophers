@@ -72,6 +72,7 @@ void	init_param(t_param *param, char **argv);
 int		check_param(t_param param);
 int		check_input(char **argv);
 void	create_table(t_param *param);
+void	write_message(t_philo *philo, char *str);
 void	exit_philo(t_param *param);
 
 #endif
