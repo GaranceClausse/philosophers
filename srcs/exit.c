@@ -25,6 +25,7 @@ void	exit_philo(t_param *param)
 		free(param->philo[i]);
 		i++;
 	}
+	pthread_mutex_destroy(&param->is_writing);
 	free(param->mutex_forks);
 	free(param->forks);
 	free(param->philo);

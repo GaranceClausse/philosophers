@@ -28,6 +28,7 @@ int	main(int argc, char **argv)
 	if (check_param(param) == 1)
 		return (1);
 	create_table(&param);
+	usleep(1000);
 	exit_philo(&param);
 	return (0);
 }

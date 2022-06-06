@@ -43,7 +43,8 @@ typedef struct s_philo
 	int		meals;
 	t_state	state;
 	pthread_t	thread;
-	long long	ate_at;
+	long long	ate_at;	
+	long long	interval_gap;
 	struct s_param	*param;	
 	pthread_mutex_t	mutex;
 }			t_philo;
@@ -58,6 +59,7 @@ typedef struct s_param
 	int		smo_dead;
 	t_philo	**philo;
 	int		*forks;
+	pthread_mutex_t	is_writing;
 	pthread_mutex_t *mutex_forks;
 	struct timeval	start_at;
 }			t_param;
