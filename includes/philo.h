@@ -61,7 +61,7 @@ typedef struct s_param
 	int		*forks;
 	pthread_mutex_t	is_writing;
 	pthread_mutex_t *mutex_forks;
-	struct timeval	start_at;
+	long long	start_at;
 }			t_param;
 
 

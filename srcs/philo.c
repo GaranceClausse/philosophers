@@ -12,33 +12,31 @@
 
 #include "philo.h"
 
+long long	actual_time()
+{	
+	struct timeval	time;
 
-
-long long	actual_time(struct timeval	time)
-{
-	
+	gettimeofday(&time, NULL);	
 	return (time.tv_sec * 1000 + time.tv_usec / 1000);
 }
 
 void	write_message(t_philo *philo, char *str)
 {
-	struct timeval	time;
 	long long		timestp;
 	long long		lastmeal;
 
-	gettimeofday(&time, NULL);	
-	timestp = actual_time(time);
+	timestp = actual_time();
 	lastmeal = (timestp - philo->ate_at);
-	if (lastmeal >= philo->param->t_die && philo->param->smo_dead == 0 && philo->state != READY && philo->state != EATING)
+	if ((lastmeal >= philo->param->t_die && philo->param->smo_dead == 0 && philo->state != EATING && philo->state != THINKING) || philo->state == DEAD)
 	{
-		philo->state = STARVE;
 		philo->param->smo_dead = 1;
-		printf("%lld %d %s\n", lastmeal, philo->id, "is dead");
+		philo->state = STARVE;
+		printf("%lld %d %s (last meal = %lld)\n", (philo->ate_at + philo->param->t_die), philo->id, "is dead", lastmeal);
 	}
 	else if (philo->param->smo_dead == 0)
 	{
 		printf("%lld %d %s\n", timestp, philo->id, str);
-		printf("%lld %d\n", lastmeal , philo->id);
+	//	printf("%lld %d\n", lastmeal , philo->id);
 	}	
 }
 
@@ -62,7 +60,6 @@ int	init_philo(t_param *param)
 {
 	int	i;
 	
-
 	i = 0;
 	while (i < param->nb_philo)
 	{
@@ -85,21 +82,29 @@ int	init_philo(t_param *param)
 }
 
 void	take_forks(t_philo *philo)
-{
-	
+{	
+	long long	gap;
+
 	if (philo->state == DONE || philo->param->smo_dead == 1)
-	{
-		return ;
-	}
-	philo->ate_at += philo->param->nb_philo;
+			return ;
+//	philo->ate_at += philo->param->nb_philo;
 	if ((philo->id % 2))
 	{	
 		if (!(pthread_mutex_lock(&philo->param->mutex_forks[philo->r_fork])))
-		{			
+		{				
+			write_message(philo, "has taken a fork");
+			if (philo->param->nb_philo == 1)
+			{
+				pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
+				usleep(philo->param->t_die * 1000);
+				gap = actual_time() - philo->ate_at - philo->param->t_die;
+				philo->ate_at += gap;			
+				philo->state = DEAD;
+				printf ("peux pas manger avec une seule fourchette!!\n");
+			}
 			pthread_mutex_lock(&philo->param->mutex_forks[philo->l_fork]);
 			write_message(philo, "has taken a fork");
-			write_message(philo, "has taken a fork");
-			philo->state = READY;
+			philo->state = EATING;
 
 		}
 	}
@@ -107,26 +112,26 @@ void	take_forks(t_philo *philo)
 	{
 		if (!(pthread_mutex_lock(&philo->param->mutex_forks[philo->l_fork])))
 		{			
-			
 			pthread_mutex_lock(&philo->param->mutex_forks[philo->r_fork]);
 			write_message(philo, "has taken a fork");
 			write_message(philo, "has taken a fork");
-			philo->state = READY;
+			philo->state = EATING;
 		}
 	}
 }
 
 int	eat(t_philo *philo)
 {	
-	struct timeval	time;
+	long long	gap;
 
 	if (philo->state == DONE || philo->param->smo_dead == 1)
 		return (-1);
-	gettimeofday(&time, NULL);
-	philo->ate_at = (actual_time(time));
-	write_message(philo, "is eating");	
-	philo->state = EATING;
+	philo->ate_at = (actual_time());
+	write_message(philo, "is eating");
 	usleep(philo->param->t_eat * 1000);
+	gap = actual_time() - philo->ate_at - philo->param->t_eat;
+	philo->ate_at += gap;
+	//printf("gap == %lld %d\n", gap, philo->id);
 	philo->state = SLEEPING;
 	if (philo->param->nb_meal != -1 && philo->meals >= philo->param->nb_meal)
 		philo->state = DONE;
@@ -138,28 +143,28 @@ int	eat(t_philo *philo)
 
 void	give_back_fork(t_philo *philo)
 {
+	long long	gap;
+
 	if (philo->state == SLEEPING)
 	{
-		philo->ate_at += philo->param->nb_philo;
 		write_message(philo, "is sleeping");		
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);	
 		usleep(philo->param->t_sleep * 1000);
+		gap = actual_time() - philo->ate_at - philo->param->t_eat - philo->param->t_eat;
+	//	printf("gap in give back == %lld %d\n", gap, philo->id);
+		philo->ate_at += gap;
 		if (philo->param->smo_dead == 0)
-		{
 			write_message(philo, "is thinking");
-		}
+		philo->state = THINKING;
 	}
-	else /* if (philo->state == DONE || philo->state == STARVE)*/
+	else
 	{
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
-		//printf("Doooone\n");	
 		usleep(1000);
 	}
 }
-
-
 
 void	*routine(void *arg)
 {
@@ -168,7 +173,7 @@ void	*routine(void *arg)
 	philo = arg;
 	if (philo->id % 2 == 0)
 		usleep(philo->param->t_eat * 1000);	
-	philo->ate_at = (actual_time(philo->param->start_at));
+	philo->ate_at = (actual_time());
 	while (philo->param->smo_dead == 0 && is_done(philo) == 0)
 	{
 		pthread_mutex_lock(&philo->mutex);
@@ -189,26 +194,23 @@ void	*routine(void *arg)
 	return (NULL);
 }
 
-int	start_to_eat(t_param *param)
+void	create_table(t_param *param)
 {
 	int	i;
 
+	param->philo = malloc(sizeof(t_philo *) * param->nb_philo);
+	if (!param->philo)
+		return ;
+	if (init_philo(param))
+	{
+		free (param->philo);
+		return ;
+	}
 	i = 0;	
-	gettimeofday(&param->start_at, NULL);
+	param->start_at = actual_time();
 	while (i < param->nb_philo)
 	{
 		pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]);		
 		i++;
 	}
-	return (0);
-}
-
-void	create_table(t_param *param)
-{
-	param->philo = malloc(sizeof(t_philo *) * param->nb_philo);
-	if (!param->philo)
-		return ;
-	if (init_philo(param))
-		return ;
-	start_to_eat(param);
 }
