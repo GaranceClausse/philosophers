@@ -57,6 +57,7 @@ typedef struct s_param
 	int		t_sleep;	
 	int		nb_meal;
 	int		smo_dead;
+	int		smo_done;
 	t_philo	**philo;
 	int		*forks;
 	pthread_mutex_t	is_writing;
