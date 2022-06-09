@@ -66,16 +66,27 @@ typedef struct s_param
 }			t_param;
 
 
-int		ft_isdigit(int c);
-size_t	ft_strlen(const char *s);
-void	ft_putchar_fd(char c, int fd);
-void	ft_putstr_fd(char *s, int fd);
-int		ft_atoi(const char *str);
-void	init_param(t_param *param, char **argv);
-int		check_param(t_param param);
-int		check_input(char **argv);
-void	create_table(t_param *param);
-void	write_message(t_philo *philo, char *str);
-void	exit_philo(t_param *param);
+int			ft_isdigit(int c);
+size_t		ft_strlen(const char *s);
+void		ft_putchar_fd(char c, int fd);
+void		ft_putstr_fd(char *s, int fd);
+int			ft_atoi(const char *str);
+long long	actual_time();
+
+void		init_param(t_param *param, char **argv);
+int			init_philo(t_param *param);
+void		exit_philo(t_param *param);
+
+int			check_param(t_param param);
+int			check_input(char **argv);
+int			check_num_philo(t_philo *philo);
+void		check_death(t_philo *philo);
+
+void		take_forks(t_philo *philo);
+void		eat(t_philo *philo);
+void		give_back_fork(t_philo *philo);
+
+void		create_table(t_param *param);
+void		write_message(t_philo *philo, char *str);
 
 #endif

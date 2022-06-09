@@ -1,5 +1,5 @@
 NAME = philosophers
-OBJS = $(addprefix ./srcs/, libft.o parser.o exit.o main.o philo.o \
+OBJS = $(addprefix ./srcs/, utils.o checker.o init_and_destroy.o main.o philo.o action.o \
 )
 
 CFLAGS = -Iincludes -std=c99 -Wall -Wextra -Werror
