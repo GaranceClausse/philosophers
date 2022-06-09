@@ -72,6 +72,11 @@ int	check_input(char **argv)
 	while (argv[i])
 	{
 		j = 0;
+		if (argv[i][0] == '\0')
+		{
+			ft_putstr_fd("Invalid argument\n", 2);
+			return (1);
+		}
 		while (argv[i][j])
 		{
 			if (ft_isdigit(argv[i][j]) == 0)
