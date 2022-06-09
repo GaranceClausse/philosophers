@@ -16,15 +16,26 @@ void	check_death(t_philo *philo)
 {
 	long long		timestp;
 	long long		lastmeal;
+	int				i;
 
+	i = 0;
 	timestp = actual_time();
 	lastmeal = (timestp - philo->ate_at);
-	if ((lastmeal >= philo->param->t_die && philo->param->smo_dead == 0 && philo->state != EATING
-		&& philo->state != THINKING) || philo->state == DEAD)
-	{
-		philo->param->smo_dead = 1;
-		philo->state = STARVE;
-		printf("%lld %d %s (last meal = %lld)\n", (philo->ate_at + philo->param->t_die), philo->id, "is dead", lastmeal);
+	while(philo->param->smo_dead == 0 && i < philo->param->nb_philo)
+	{	
+		if (philo->param->philo[i]->meals != 0)
+		{
+			lastmeal = (timestp - philo->param->philo[i]->ate_at);
+			if ((lastmeal >= philo->param->t_die && philo->param->smo_dead == 0
+				&& philo->param->philo[i]->state != EATING)
+				|| philo->param->philo[i]->state == DEAD)
+			{
+				philo->param->smo_dead = 1;
+				philo->param->philo[i]->state = STARVE;
+				printf("%lld %d %s\n", (philo->param->philo[i]->ate_at + philo->param->t_die), philo->param->philo[i]->id, "is dead");
+			}
+		}
+		i++;
 	}
 }
 
@@ -34,6 +45,8 @@ int	check_num_philo(t_philo *philo)
 	{
 		printf("%lld 1 has taken a fork\n", philo->ate_at);	
 		philo->state = DEAD;
+		philo->meals++;
+		check_death(philo);
 		return (1);
 	}
 	return (0);

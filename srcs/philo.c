@@ -17,7 +17,7 @@ void	write_message(t_philo *philo, char *str)
 {
 	long long		timestp;
 	
-	timestp = actual_time();
+	timestp = actual_time();	
 	if (philo->param->smo_dead == 0)
 	{
 		printf("%lld %d %s\n", timestp, philo->id, str);
@@ -40,9 +40,9 @@ void	*routine(void *arg)
 		if (philo->param->smo_done == philo->param->nb_philo)
 			break ;
 		pthread_mutex_lock(&philo->mutex);
-	//	pthread_mutex_lock(&philo->param->is_writing);
+		pthread_mutex_lock(&philo->param->is_writing);
 		take_forks(philo);
-	//	pthread_mutex_unlock(&philo->param->is_writing);
+		pthread_mutex_unlock(&philo->param->is_writing);
 		eat(philo);
 		give_back_fork(philo);
 		pthread_mutex_unlock(&philo->mutex);
