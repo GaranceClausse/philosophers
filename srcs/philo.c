@@ -20,7 +20,7 @@ long long	actual_time()
 	return (time.tv_sec * 1000 + time.tv_usec / 1000);
 }
 
-void	write_message(t_philo *philo, char *str)
+void	is_dead(t_philo *philo)
 {
 	long long		timestp;
 	long long		lastmeal;
@@ -31,9 +31,16 @@ void	write_message(t_philo *philo, char *str)
 	{
 		philo->param->smo_dead = 1;
 		philo->state = STARVE;
-		printf("%lld %d %s (last meal = %lld)\n", (philo->ate_at + philo->param->t_die), philo->id, "is dead", lastmeal);
+		printf("%lld %d %s (last meal = %lld)\n", timestp /*(philo->ate_at + philo->param->t_die)*/, philo->id, "is dead", lastmeal);
 	}
-	else if (philo->param->smo_dead == 0)
+}
+
+void	write_message(t_philo *philo, char *str)
+{
+	long long		timestp;
+	
+	timestp = actual_time();
+	if (philo->param->smo_dead == 0)
 	{
 		printf("%lld %d %s\n", timestp, philo->id, str);
 	//	printf("%lld %d\n", lastmeal , philo->id);
@@ -71,6 +78,7 @@ void	take_forks(t_philo *philo)
 	int			first_fork;
 	int			second_fork;
 
+	is_dead(philo);
 	if (philo->state == DONE || philo->param->smo_dead == 1)
 			return ;
 	first_fork = philo->l_fork;
@@ -103,6 +111,7 @@ void	eat(t_philo *philo)
 {	
 	long long	gap;
 
+	is_dead(philo);
 	if (philo->state == DONE || philo->param->smo_dead == 1)
 	{
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
@@ -135,6 +144,7 @@ void	give_back_fork(t_philo *philo)
 		usleep(philo->param->t_sleep * 1000);
 		gap = actual_time() - philo->ate_at - philo->param->t_eat - philo->param->t_eat;
 		philo->ate_at += gap;
+		is_dead(philo);
 		if (philo->param->smo_dead == 0)
 			write_message(philo, "is thinking");
 		usleep(1000);
@@ -165,7 +175,7 @@ void	*routine(void *arg)
 			break ;
 		pthread_mutex_lock(&philo->mutex);
 	//	pthread_mutex_lock(&philo->param->is_writing);
-		take_forks(philo);		
+		take_forks(philo);
 	//	pthread_mutex_unlock(&philo->param->is_writing);
 		eat(philo);
 		give_back_fork(philo);
