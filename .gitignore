@@ -1,2 +1,2 @@
-*.o
-philosophers
+philo/*.o
+philo/philo
