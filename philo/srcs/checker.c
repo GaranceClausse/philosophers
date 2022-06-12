@@ -19,10 +19,10 @@ void	check_death(t_philo *philo)
 	int				i;
 
 	i = 0;
-	timestp = actual_time();
-	lastmeal = (timestp - philo->ate_at);
 	while (philo->param->smo_dead == 0 && i < philo->param->nb_philo)
 	{	
+		
+		timestp = actual_time();
 		if (philo->param->philo[i]->meals != 0)
 		{
 			lastmeal = (timestp - philo->param->philo[i]->ate_at);
@@ -32,7 +32,7 @@ void	check_death(t_philo *philo)
 			{
 				philo->param->smo_dead = 1;
 				philo->param->philo[i]->state = STARVE;
-				printf("%lld %d %s\n", (philo->param->philo[i]->ate_at + philo->param->t_die), philo->param->philo[i]->id, "is dead");
+				printf("%lld %d %s (last meal = %lld, killed buy %d)\n", (philo->param->philo[i]->ate_at + philo->param->t_die), philo->param->philo[i]->id, "died", lastmeal, philo->id);
 			}
 		}
 		i++;

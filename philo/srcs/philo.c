@@ -67,6 +67,7 @@ void	create_table(t_param *param)
 	while (i < param->nb_philo)
 	{
 		pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]);
+		usleep(500);
 		i++;
 	}
 }
