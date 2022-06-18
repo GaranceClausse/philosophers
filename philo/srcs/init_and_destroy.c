@@ -27,6 +27,7 @@ void	init_param(t_param *param, char **argv)
 	param->smo_dead = 0;
 	param->smo_done = 0;
 	pthread_mutex_init(&param->is_writing, NULL);
+	pthread_mutex_init(&param->smo_dead_mutex, NULL);
 	param->mutex_forks = malloc(sizeof(pthread_mutex_t) * param->nb_philo);
 	param->forks = malloc(sizeof(int) * param->nb_philo);
 //	if (!param->mutex_forks)
@@ -72,11 +73,18 @@ void	exit_philo(t_param *param)
 	while (i < param->nb_philo)
 	{
 		pthread_join(param->philo[i]->thread, NULL);
+		i++;
+	}
+	i = 0;
+	while (i < param->nb_philo)
+	{
+		
 		pthread_mutex_destroy(&param->mutex_forks[i]);
 		pthread_mutex_destroy(&param->philo[i]->mutex);
 		free(param->philo[i]);
 		i++;
 	}
+	pthread_mutex_destroy(&param->smo_dead_mutex);
 	pthread_mutex_destroy(&param->is_writing);
 	free(param->mutex_forks);
 	free(param->forks);

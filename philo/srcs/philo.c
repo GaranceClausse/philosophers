@@ -17,10 +17,13 @@ void	write_message(t_philo *philo, char *str)
 {
 	long long		timestp;
 	
-	timestp = actual_time();	
+	timestp = actual_time();
 	if (philo->param->smo_dead == 0)
 	{
-		printf("%lld %d %s\n", timestp, philo->id, str);
+		pthread_mutex_lock(&philo->param->is_writing);
+		printf("%lld %d %s\n", (timestp - philo->param->start_at), philo->id, str);
+		pthread_mutex_unlock(&philo->param->is_writing);
+
 	}	
 }
 
@@ -31,9 +34,7 @@ void	*routine(void *arg)
 
 	philo = arg;
 	if (philo->id % 2 == 0)
-		usleep(philo->param->t_eat * 1000);
-	else 
-		usleep(50);
+		usleep(philo->param->t_eat / 2 * 1000);
 	philo->ate_at = (actual_time());	
 	gap = actual_time() - philo->ate_at - philo->param->t_eat;
 	philo->ate_at += gap;
@@ -42,12 +43,13 @@ void	*routine(void *arg)
 		if (philo->param->smo_done == philo->param->nb_philo)
 			break ;
 		pthread_mutex_lock(&philo->mutex);
-		pthread_mutex_lock(&philo->param->is_writing);
-		take_forks(philo);
-		pthread_mutex_unlock(&philo->param->is_writing);
-		eat(philo);
-		give_back_fork(philo);
+		if (take_forks(philo) || eat(philo) || give_back_fork(philo))
+		{				
+			pthread_mutex_unlock(&philo->mutex);
+			break ;
+		}
 		pthread_mutex_unlock(&philo->mutex);
+
 	}
 	return (NULL);
 }
@@ -69,8 +71,9 @@ void	create_table(t_param *param)
 	param->start_at = actual_time();
 	while (i < param->nb_philo)
 	{
-		pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]);
-		//usleep(50);
+		if (pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]) == -1)
+			return ;
+		usleep(50);
 		i++;
 	}
 }

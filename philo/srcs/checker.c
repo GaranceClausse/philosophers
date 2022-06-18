@@ -19,6 +19,7 @@ void	check_death(t_philo *philo)
 	int				i;
 
 	i = 0;
+	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	while (philo->param->smo_dead == 0 && i < philo->param->nb_philo)
 	{			
 		timestp = actual_time();
@@ -30,19 +31,25 @@ void	check_death(t_philo *philo)
 				|| philo->param->philo[i]->state == DEAD)
 			{
 				philo->param->smo_dead = 1;
-				philo->param->philo[i]->state = STARVE;
-				printf("%lld %d %s (last meal = %lld, killed buy %d)\n", timestp /*(philo->param->philo[i]->ate_at + philo->param->t_die)*/, philo->param->philo[i]->id, "died", lastmeal, philo->id);
+			//	philo->param->philo[i]->state = STARVE;
+				printf("%lld %d %s (last meal = %lld, killed by %d)\n", (timestp - philo->param->start_at) /*(philo->param->philo[i]->ate_at + philo->param->t_die)*/, philo->param->philo[i]->id, "died", lastmeal, philo->id);
 			}
 		}
 		i++;
 	}
+	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
+
 }
 
 int	check_num_philo(t_philo *philo)
 {
+	long long		timestp;
+	
+	timestp = actual_time();
 	if (philo->param->nb_philo == 1)
 	{
-		printf("%lld 1 has taken a fork\n", philo->ate_at);	
+		printf("%lld 1 has taken a fork\n", (timestp - philo->param->start_at));
+		usleep(philo->param->t_die * 1000);
 		philo->state = DEAD;
 		philo->meals++;
 		check_death(philo);

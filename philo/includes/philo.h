@@ -62,6 +62,7 @@ typedef struct s_param
 	int		*forks;
 	pthread_mutex_t	is_writing;
 	pthread_mutex_t *mutex_forks;
+	pthread_mutex_t	smo_dead_mutex;
 	long long	start_at;
 }			t_param;
 
@@ -82,9 +83,9 @@ int			check_input(char **argv);
 int			check_num_philo(t_philo *philo);
 void		check_death(t_philo *philo);
 
-void		take_forks(t_philo *philo);
-void		eat(t_philo *philo);
-void		give_back_fork(t_philo *philo);
+int			take_forks(t_philo *philo);
+int			eat(t_philo *philo);
+int			give_back_fork(t_philo *philo);
 
 void		create_table(t_param *param);
 void		write_message(t_philo *philo, char *str);

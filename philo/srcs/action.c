@@ -12,14 +12,14 @@
 
 #include "philo.h"
 
-void	take_forks(t_philo *philo)
+int	take_forks(t_philo *philo)
 {	
 	int			first_fork;
 	int			second_fork;
 
 	
 	if (philo->state == DONE || philo->param->smo_dead == 1 || check_num_philo(philo))
-			return ;
+			return (1);
 	first_fork = philo->l_fork;
 	second_fork = philo->r_fork;
 	if (!(philo->id % 2))
@@ -34,11 +34,11 @@ void	take_forks(t_philo *philo)
 		write_message(philo, "has taken a fork");
 		write_message(philo, "has taken a fork");
 		philo->state = EATING;
-
-	}	
+	}
+	return (0);
 }
 
-void	eat(t_philo *philo)
+int	eat(t_philo *philo)
 {	
 	long long	gap;
 
@@ -47,7 +47,7 @@ void	eat(t_philo *philo)
 	{
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
-		return ;
+		return (1);
 	}
 	philo->ate_at = (actual_time());
 	write_message(philo, "is eating");
@@ -61,9 +61,10 @@ void	eat(t_philo *philo)
 		philo->param->smo_done++;
 		philo->state = DONE;
 	}
+	return (0);
 }
 
-void	give_back_fork(t_philo *philo)
+int	give_back_fork(t_philo *philo)
 {
 	long long	gap;
 
@@ -83,11 +84,10 @@ void	give_back_fork(t_philo *philo)
 		philo->ate_at += gap;
 		check_death(philo);
 		philo->state = THINKING;
+		return (0);
 	}
-	else
-	{
-		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
-		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
-		usleep(1000);
-	}
+	pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
+	pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
+	usleep(1000);
+	return (1);
 }
