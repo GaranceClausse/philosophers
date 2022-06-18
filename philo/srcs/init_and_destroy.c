@@ -15,7 +15,7 @@
 void	init_param(t_param *param, char **argv)
 {
 	int	i;
-	
+
 	i = 0;
 	param->nb_philo = ft_atoi(argv[1]);
 	param->t_die = ft_atoi(argv[2]);
@@ -43,7 +43,7 @@ void	init_param(t_param *param, char **argv)
 int	init_philo(t_param *param)
 {
 	int	i;
-	
+
 	i = 0;
 	while (i < param->nb_philo)
 	{
@@ -77,8 +77,7 @@ void	exit_philo(t_param *param)
 	}
 	i = 0;
 	while (i < param->nb_philo)
-	{
-		
+	{		
 		pthread_mutex_destroy(&param->mutex_forks[i]);
 		pthread_mutex_destroy(&param->philo[i]->mutex);
 		free(param->philo[i]);

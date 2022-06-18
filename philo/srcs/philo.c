@@ -12,32 +12,30 @@
 
 #include "philo.h"
 
-
 void	write_message(t_philo *philo, char *str)
 {
 	long long		timestp;
-	
-	timestp = actual_time();
+
+	timestp = actual_time() - philo->param->start_at;
 	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	if (philo->param->smo_dead == 0)
 	{
 		pthread_mutex_lock(&philo->param->is_writing);
-		printf("%lld %d %s\n", (timestp - philo->param->start_at), philo->id, str);
+		printf("%lld %d %s\n", timestp, philo->id, str);
 		pthread_mutex_unlock(&philo->param->is_writing);
-
 	}
 	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 }
 
 void	*routine(void *arg)
 {
-	t_philo *philo;
-	long long gap;
+	t_philo		*philo;
+	long long	gap;
 
 	philo = arg;
 	if (philo->id % 2 == 0)
 		usleep((philo->param->t_eat / 2) * 1000);
-	philo->ate_at = (actual_time());	
+	philo->ate_at = (actual_time());
 	gap = actual_time() - philo->ate_at - philo->param->t_eat;
 	philo->ate_at += gap;
 	while (philo->param->smo_dead == 0)
@@ -54,7 +52,6 @@ void	create_table(t_param *param)
 {
 	int	i;
 
-
 	param->philo = malloc(sizeof(t_philo *) * param->nb_philo);
 	if (!param->philo)
 		return ;
@@ -63,11 +60,12 @@ void	create_table(t_param *param)
 		free (param->philo);
 		return ;
 	}
-	i = 0;	
+	i = 0;
 	param->start_at = actual_time();
 	while (i < param->nb_philo)
 	{
-		if (pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]) == -1)
+		if (pthread_create(&param->philo[i]->thread, NULL,
+				&routine, (void *)param->philo[i]) == -1)
 			return ;
 		usleep(200);
 		i++;
