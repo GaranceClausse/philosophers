@@ -42,6 +42,20 @@ int	take_forks(t_philo *philo)
 	return (0);
 }
 
+void	ft_usleep(t_philo *philo, int t_usleep)
+{
+	long long	i;
+
+	i = actual_time();
+	while (philo->param->smo_dead == 0)
+	{
+		check_death(philo);
+		if ((actual_time() - i) >= t_usleep)
+			break ;
+		usleep(50);
+	}
+}
+
 int	eat(t_philo *philo)
 {	
 	long long	gap;
@@ -57,7 +71,7 @@ int	eat(t_philo *philo)
 	philo->ate_at = (actual_time());
 	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 	write_message(philo, "is eating");
-	usleep(philo->param->t_eat * 1000);
+	ft_usleep(philo, philo->param->t_eat);
 	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	gap = actual_time() - philo->ate_at - philo->param->t_eat;
 	philo->ate_at += gap;
@@ -84,12 +98,14 @@ int	give_back_fork(t_philo *philo)
 		write_message(philo, "is sleeping");	
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);	
-		usleep(philo->param->t_sleep * 1000);
+		usleep(philo->param->t_sleep / 2 * 1000);		
+		check_death(philo);
+		usleep(philo->param->t_sleep / 2 * 1000);		
+		check_death(philo);
 		pthread_mutex_lock(&philo->param->smo_dead_mutex);
 		gap = actual_time() - philo->ate_at - philo->param->t_eat - philo->param->t_sleep;
 		philo->ate_at += gap;
 		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
-		check_death(philo);
 	//	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 		if (philo->param->smo_dead == 0)
 			write_message(philo, "is thinking");

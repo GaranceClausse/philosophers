@@ -36,7 +36,7 @@ void	*routine(void *arg)
 
 	philo = arg;
 	if (philo->id % 2 == 0)
-		usleep(philo->param->t_eat / 2 * 1000);
+		usleep((philo->param->t_eat / 2) * 1000);
 	philo->ate_at = (actual_time());	
 	gap = actual_time() - philo->ate_at - philo->param->t_eat;
 	philo->ate_at += gap;
@@ -44,14 +44,8 @@ void	*routine(void *arg)
 	{
 		if (philo->param->smo_done == philo->param->nb_philo)
 			break ;
-		pthread_mutex_lock(&philo->mutex);
 		if (take_forks(philo) || eat(philo) || give_back_fork(philo))
-		{				
-			pthread_mutex_unlock(&philo->mutex);
 			break ;
-		}
-		pthread_mutex_unlock(&philo->mutex);
-
 	}
 	return (NULL);
 }
@@ -75,7 +69,7 @@ void	create_table(t_param *param)
 	{
 		if (pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]) == -1)
 			return ;
-		usleep(50);
+		usleep(200);
 		i++;
 	}
 }

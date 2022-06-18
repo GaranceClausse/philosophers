@@ -55,7 +55,9 @@ int	check_num_philo(t_philo *philo)
 		usleep(philo->param->t_die * 1000);
 		philo->state = DEAD;
 		philo->meals++;
+		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 		check_death(philo);
+		pthread_mutex_lock(&philo->param->smo_dead_mutex);
 		return (1);
 	}
 	return (0);
