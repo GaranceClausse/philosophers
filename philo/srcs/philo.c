@@ -18,13 +18,15 @@ void	write_message(t_philo *philo, char *str)
 	long long		timestp;
 	
 	timestp = actual_time();
+	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	if (philo->param->smo_dead == 0)
 	{
 		pthread_mutex_lock(&philo->param->is_writing);
 		printf("%lld %d %s\n", (timestp - philo->param->start_at), philo->id, str);
 		pthread_mutex_unlock(&philo->param->is_writing);
 
-	}	
+	}
+	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 }
 
 void	*routine(void *arg)
