@@ -31,7 +31,9 @@ void	*routine(void *arg)
 
 	philo = arg;
 	if (philo->id % 2 == 0)
-		usleep(philo->param->t_eat * 1000);	
+		usleep(philo->param->t_eat * 1000);
+	else 
+		usleep(50);
 	philo->ate_at = (actual_time());	
 	gap = actual_time() - philo->ate_at - philo->param->t_eat;
 	philo->ate_at += gap;
@@ -54,6 +56,7 @@ void	create_table(t_param *param)
 {
 	int	i;
 
+
 	param->philo = malloc(sizeof(t_philo *) * param->nb_philo);
 	if (!param->philo)
 		return ;
@@ -67,7 +70,7 @@ void	create_table(t_param *param)
 	while (i < param->nb_philo)
 	{
 		pthread_create(&param->philo[i]->thread, NULL, &routine, (void *)param->philo[i]);
-		usleep(500);
+		//usleep(50);
 		i++;
 	}
 }

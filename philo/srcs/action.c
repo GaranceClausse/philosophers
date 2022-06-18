@@ -79,7 +79,6 @@ void	give_back_fork(t_philo *philo)
 		check_death(philo);
 		if (philo->param->smo_dead == 0)
 			write_message(philo, "is thinking");
-		usleep(1000);
 		gap = actual_time() - philo->ate_at - philo->param->t_eat - philo->param->t_sleep;
 		philo->ate_at += gap;
 		check_death(philo);
