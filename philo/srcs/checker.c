@@ -28,7 +28,9 @@ void	check_death(t_philo *philo)
 		if (philo->param->philo[i]->meals != 0)
 		{
 			pthread_mutex_unlock(&philo->param->smo_dead_mutex);
+			pthread_mutex_lock(&philo->param->smo_dead_mutex);
 			lastmeal = (timestp - philo->param->philo[i]->ate_at);
+			pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 			if ((lastmeal >= philo->param->t_die && philo->param->smo_dead == 0
 					&& state != EATING && state != DONE) || state == DEAD)
 			{

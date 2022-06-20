@@ -59,7 +59,9 @@ int	take_forks(t_philo *philo)
 		pthread_mutex_lock(&philo->param->mutex_forks[second_fork]);
 		write_message(philo, "has taken a fork");
 		write_message(philo, "has taken a fork");
+		pthread_mutex_lock(&philo->param->smo_dead_mutex);
 		philo->state = EATING;
+		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 	}
 	return (0);
 }
@@ -111,7 +113,6 @@ int	give_back_fork(t_philo *philo)
 		gap = actual_time() - philo->ate_at - philo->param->t_eat - philo->param->t_sleep;
 		philo->ate_at += gap;
 		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
-	//	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 		if (philo->param->smo_dead == 0)
 			write_message(philo, "is thinking");		
 		pthread_mutex_lock(&philo->param->smo_dead_mutex);
@@ -119,8 +120,8 @@ int	give_back_fork(t_philo *philo)
 		philo->ate_at += gap;
 		philo->state = THINKING;
 		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
-	//	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 		check_death(philo);
+		usleep(500);
 		return (0);
 	}
 	pthread_mutex_unlock(&philo->param->mutex_forks[philo->l_fork]);

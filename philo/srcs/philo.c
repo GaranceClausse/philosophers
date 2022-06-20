@@ -33,7 +33,7 @@ void	*routine(void *arg)
 	long long	gap;
 
 	philo = arg;
-	if (philo->id % 2 == 0)
+	if (philo->id % 2 != 0)
 		usleep((philo->param->t_eat / 2) * 1000);
 	philo->ate_at = (actual_time());
 	gap = actual_time() - philo->ate_at - philo->param->t_eat;
