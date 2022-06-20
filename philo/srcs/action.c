@@ -33,11 +33,25 @@ void	ft_usleep(t_philo *philo, int t_usleep)
 	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 }
 
+static int	which_fork(t_philo *philo, int i)
+{
+	if (i == 1)
+	{
+		if (!(philo->id % 2))
+			return (philo->r_fork);
+		return (philo->l_fork);
+	}
+	else if (i == 2)
+	{
+		if (!(philo->id % 2))
+			return (philo->l_fork);
+		return (philo->r_fork);
+	}
+	return (0);
+}
+
 int	take_forks(t_philo *philo)
 {	
-	int			first_fork;
-	int			second_fork;
-
 	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	if (philo->state == DONE || philo->param->smo_dead == 1
 		|| check_num_philo(philo))
@@ -46,17 +60,10 @@ int	take_forks(t_philo *philo)
 		return (1);
 	}
 	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
-	first_fork = philo->l_fork;
-	second_fork = philo->r_fork;
-	if (!(philo->id % 2))
-	{
-		first_fork = philo->r_fork;
-		second_fork = philo->l_fork;
-	}
-	if (!(pthread_mutex_lock(&philo->param->mutex_forks[first_fork])))
+	if (!(pthread_mutex_lock(&philo->param->mutex_forks[which_fork(philo, 1)])))
 	{	
 		check_death(philo);
-		pthread_mutex_lock(&philo->param->mutex_forks[second_fork]);
+		pthread_mutex_lock(&philo->param->mutex_forks[which_fork(philo, 2)]);
 		write_message(philo, "has taken a fork");
 		write_message(philo, "has taken a fork");
 		pthread_mutex_lock(&philo->param->smo_dead_mutex);
@@ -68,8 +75,6 @@ int	take_forks(t_philo *philo)
 
 int	eat(t_philo *philo)
 {	
-	long long	gap;
-
 	check_death(philo);
 	if (philo->state == DONE || philo->param->smo_dead == 1)
 	{
@@ -83,8 +88,7 @@ int	eat(t_philo *philo)
 	write_message(philo, "is eating");
 	ft_usleep(philo, philo->param->t_eat);
 	pthread_mutex_lock(&philo->param->smo_dead_mutex);
-	gap = actual_time() - philo->ate_at - philo->param->t_eat;
-	philo->ate_at += gap;
+	philo->ate_at += actual_time() - philo->ate_at - philo->param->t_eat;
 	philo->state = SLEEPING;
 	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 	philo->meals++;
@@ -100,8 +104,6 @@ int	eat(t_philo *philo)
 
 int	give_back_fork(t_philo *philo)
 {
-	long long	gap;
-
 	check_death(philo);
 	if (philo->state == SLEEPING && philo->param->smo_dead == 0)
 	{
@@ -110,14 +112,10 @@ int	give_back_fork(t_philo *philo)
 		pthread_mutex_unlock(&philo->param->mutex_forks[philo->r_fork]);
 		ft_usleep(philo, philo->param->t_sleep);
 		pthread_mutex_lock(&philo->param->smo_dead_mutex);
-		gap = actual_time() - philo->ate_at - philo->param->t_eat - philo->param->t_sleep;
-		philo->ate_at += gap;
 		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 		if (philo->param->smo_dead == 0)
-			write_message(philo, "is thinking");		
+			write_message(philo, "is thinking");
 		pthread_mutex_lock(&philo->param->smo_dead_mutex);
-		gap = actual_time() - philo->ate_at - philo->param->t_eat - philo->param->t_sleep;
-		philo->ate_at += gap;
 		philo->state = THINKING;
 		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 		check_death(philo);

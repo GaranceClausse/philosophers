@@ -12,10 +12,28 @@
 
 #include "philo.h"
 
+static void	philo_is_dead(t_philo *philo, t_state state)
+{
+	long long		lastmeal;
+
+	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
+	pthread_mutex_lock(&philo->param->smo_dead_mutex);
+	lastmeal = (actual_time() - philo->ate_at);
+	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
+	if ((lastmeal >= philo->param->t_die && philo->param->smo_dead == 0
+			&& state != EATING && state != DONE) || state == DEAD)
+	{
+		pthread_mutex_lock(&philo->param->smo_dead_mutex);
+		philo->param->smo_dead = 1;
+		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
+		printf("%lld %d died\n", (actual_time()
+				- philo->param->start_at), philo->id);
+	}
+	pthread_mutex_lock(&philo->param->smo_dead_mutex);
+}
+
 void	check_death(t_philo *philo)
 {
-	long long		timestp;
-	long long		lastmeal;
 	int				i;
 	t_state			state;
 
@@ -23,24 +41,9 @@ void	check_death(t_philo *philo)
 	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	while (philo->param->smo_dead == 0 && i < philo->param->nb_philo)
 	{	
-		timestp = actual_time();
 		state = philo->param->philo[i]->state;
 		if (philo->param->philo[i]->meals != 0)
-		{
-			pthread_mutex_unlock(&philo->param->smo_dead_mutex);
-			pthread_mutex_lock(&philo->param->smo_dead_mutex);
-			lastmeal = (timestp - philo->param->philo[i]->ate_at);
-			pthread_mutex_unlock(&philo->param->smo_dead_mutex);
-			if ((lastmeal >= philo->param->t_die && philo->param->smo_dead == 0
-					&& state != EATING && state != DONE) || state == DEAD)
-			{
-				pthread_mutex_lock(&philo->param->smo_dead_mutex);
-				philo->param->smo_dead = 1;
-				pthread_mutex_unlock(&philo->param->smo_dead_mutex);
-				printf("%lld %d %s (last meal = %lld, killed by %d)\n", (timestp - philo->param->start_at) /*(philo->param->philo[i]->ate_at + philo->param->t_die)*/, philo->param->philo[i]->id, "died", lastmeal, philo->id);
-			}
-			pthread_mutex_lock(&philo->param->smo_dead_mutex);
-		}
+			philo_is_dead(philo->param->philo[i], state);
 		i++;
 	}
 	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
@@ -70,7 +73,7 @@ int	check_param(t_param param)
 	if (param.nb_philo <= 0 || param.t_die < 0 || param.t_eat < 0
 		|| param.t_sleep < 0 || (param.nb_meal <= 0 && param.nb_meal != -1))
 	{
-		ft_putstr_fd("Invalid argument\n./philo number_of_philosophers time_to_die time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]\n", 2);
+		ft_putstr_fd("Invalid argument\n", 2);
 		return (1);
 	}
 	return (0);

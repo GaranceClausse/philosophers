@@ -35,16 +35,24 @@ void	*routine(void *arg)
 	philo = arg;
 	if (philo->id % 2 != 0)
 		usleep((philo->param->t_eat / 2) * 1000);
+	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	philo->ate_at = (actual_time());
 	gap = actual_time() - philo->ate_at - philo->param->t_eat;
 	philo->ate_at += gap;
+	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
+	pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	while (philo->param->smo_dead == 0)
 	{
-		if (philo->param->smo_done == philo->param->nb_philo)
+		pthread_mutex_unlock(&philo->param->smo_dead_mutex);
+		if (philo->param->smo_done == philo->param->nb_philo
+			|| take_forks(philo) || eat(philo) || give_back_fork(philo))
+		{
+			pthread_mutex_lock(&philo->param->smo_dead_mutex);
 			break ;
-		if (take_forks(philo) || eat(philo) || give_back_fork(philo))
-			break ;
+		}
+		pthread_mutex_lock(&philo->param->smo_dead_mutex);
 	}
+	pthread_mutex_unlock(&philo->param->smo_dead_mutex);
 	return (NULL);
 }
 
